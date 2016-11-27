@@ -1,6 +1,6 @@
 {
     "name": "vscode-md-timeline-code",
-    "displayName": "For Interacting with the Timeline Code Library",
+    "displayName": "Timeline VSCode",
     "description": "Timeline Code linking in VSCode - A GUI for vscode for fast pace code previewing and editing (https://github.com/leroyron/timeline-code)",
     "version": "0.0.10",
     "publisher": "Leroy Thompson",
