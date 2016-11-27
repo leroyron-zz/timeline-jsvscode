@@ -16,7 +16,7 @@ export function activate(context: vscode.ExtensionContext) {
         private _onDidChange = new vscode.EventEmitter<vscode.Uri>();
 
         public provideTextDocumentContent(uri: vscode.Uri): string {
-            return this.createCssSnippet();
+            return this.createMarkDownDoc();
         }
 
         get onDidChange(): vscode.Event<vscode.Uri> {
@@ -27,7 +27,7 @@ export function activate(context: vscode.ExtensionContext) {
             this._onDidChange.fire(uri);
         }
 
-        private createCssSnippet() {
+        private createMarkDownDoc() {
             let editor = vscode.window.activeTextEditor;
             if (!(editor.document.languageId === 'markdown')) {
                 return this.errorSnippet("Active editor doesn't show a MarkDown document - no timeline to link.")
