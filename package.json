@@ -1,0 +1,56 @@
+{
+    "name": "vscode-md-timeline-code",
+    "displayName": "For Interacting with the Timeline Code Library",
+    "description": "Timeline Code linking in VSCode - A GUI for vscode for fast pace code previewing and editing (https://github.com/leroyron/timeline-code)",
+    "version": "0.0.10",
+    "publisher": "Leroy Thompson",
+	"galleryBanner": {
+		"color": "#5c2d91",
+		"theme": "dark"
+	},
+	"bugs": {
+		"url": "https://github.com/ToloRon/timeline-vscode/issues",
+		"email": "leroy.ron@outlook.com"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/ToloRon/timeline-vscode.git"
+	},
+    "homepage": "https://github.com/ToloRon/timeline-vscode/wiki",
+	"categories": [
+		"Other"
+	],
+    "engines": {
+        "vscode": "^0.10.7"
+    },
+    "activationEvents": [
+        "onCommand:extension.linkTimeLineCode"
+    ],
+    "main": "./out/src/extension",
+    "contributes": {
+        "commands": [
+            {
+                "command": "extension.linkTimeLineCode",
+                "title": "Link Timeline Code"
+            }
+        ],
+        "menus": {
+            "editor/title": [
+                {
+                    "command": "extension.linkTimeLineCode",
+                    "when": "resourceLangId == md"
+                }
+            ]
+        }
+    },
+    "scripts": {
+        "vscode:prepublish": "node ./node_modules/vscode/bin/compile",
+        "compile": "node ./node_modules/vscode/bin/compile -watch -p ./",
+        "postinstall": "node ./node_modules/vscode/bin/install",
+        "tslint": "tslint -c tslint.json src/extension.ts"
+    },
+    "devDependencies": {
+        "typescript": "^1.7.5",
+        "vscode": "^0.11.0"
+    }
+}
