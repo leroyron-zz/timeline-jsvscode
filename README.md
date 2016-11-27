@@ -5,8 +5,8 @@ The purpose of the extension is to link Timeline Code enabling it to command VSC
 - Open a MarkDown file with Timeline Code Library.
 - Use `Link TimeLine Code`
 - Interact with the Timeline and insert actions, sounds, comments or segments,
-- The corresponding code for and an inserted Action, Sound, Comment or Segment is opened in the active code tab for edit,
-- Edit the code and run over the insert in the Timeline.
+- The corresponding code for the insert is opened in the active code tab for edit,
+- Edit the code and run the Timeline.
 
 ![Navigation](images/preview.gif)
 
