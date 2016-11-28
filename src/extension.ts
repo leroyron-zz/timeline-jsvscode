@@ -80,11 +80,10 @@ export function activate(context: vscode.ExtensionContext) {
             fspathg.pop();
             const fspathJoin = fspathg.join('/');
 
-            let text = document.getText();
-            let regx = /<markdown-html>((.|\n)*?)<\/markdown-html>/g;
-            let markDownDocument = regx.exec(text)[1];
-            //app file local reference - working directory on disk
-            markDownDocument = markDownDocument.replace(new RegExp(
+            let markDownDocument = document.getText();
+            markDownDocument = markDownDocument.replace(new RegExp(`<markdown-html>`, `g`), ``)
+            .replace(new RegExp(`</markdown-html>`, `g`), ``)
+            .replace(new RegExp(
                 `<script type=\"text/javascript\" src=\"lib/window.app.js\"></script>`, ``), 
                 `<script type=\"text/javascript\" src=\"lib/window.app.js\"></script>
                 <script>
@@ -94,12 +93,12 @@ export function activate(context: vscode.ExtensionContext) {
                 app._fileRefUser = '${pathJoin}/user/';//expose to file references in code
                 app._vscodeCommandLink = 'expose'//expose to have code aware of vscode
                 </script>`
-            );
-            markDownDocument = markDownDocument.replace(new RegExp(`href=\"`, `g`), `href=\"${pathJoin}/`);
-            const srcMarkDownDocument = markDownDocument.replace(new RegExp(`src=\"`, `g`), `src=\"${fspathJoin}/`);
+            )
+            .replace(new RegExp(`href=\"`, `g`), `href=\"${pathJoin}/`)
+            .replace(new RegExp(`src=\"`, `g`), `src=\"${fspathJoin}/`);
             return `<!DOCTYPE html>
                     <html>
-                    ${srcMarkDownDocument}
+                    ${markDownDocument}
                     <script>
                     app._vscodeCommandOpen = 'command:extension.openCodeRule?';
                     app._vscodeCommandSave = 'command:extension.saveCodeRule?';
