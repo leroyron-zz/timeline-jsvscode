@@ -17,6 +17,7 @@ The purpose of the extension is to link Timeline Code enabling it to command VSC
 - The generated HTML document is modified and contains `app._fileLocal` to link all local reference files in working directory
 - The generated HTML document is modified to command vscode and vice versa with use of `vscode.commands.registerCommand`
 - The generated HTML document is then opened in an editor in the 2nd Column using the command `vscode.previewHtml`.
+-  app.js gets opened in an editor in the 1nd Column using the command `vscode.open` the first time and there after timeline codes such as the actions, sounds, comments and segments - are opened by inserting or clicking them in the timeline or running the timeline to open/preview code during playback.
 
 # How to run locally
 
