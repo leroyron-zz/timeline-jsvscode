@@ -8,7 +8,7 @@ The purpose of the extension is to link Timeline Code enabling it to command VSC
 - The corresponding code for the insert is opened in the active code tab for edit,
 - Edit the code and run the Timeline.
 
-![Navigation](images/preview.gif)
+![Demo](https://github.com/leroyron/timeline-vscode/raw/master/images/preview.gif)
 
 # How it works
 
