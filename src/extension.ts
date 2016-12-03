@@ -30,7 +30,9 @@ export function activate(context: vscode.ExtensionContext) {
         private createMarkDownDoc() {
             let editor = vscode.window.activeTextEditor;
             if (!(editor.document.languageId === 'markdown')) {
+                successDoc = false
                 return this.errorSnippet("Active editor doesn't show a MarkDown document - no timeline to link.")
+                
             }
             return this.extractSnippet();
         }
@@ -47,6 +49,7 @@ export function activate(context: vscode.ExtensionContext) {
             }
             
             if (invalidDependancies) {
+                successDoc = false
                 return this.errorSnippet("This document has no timeline.");
             } else {
                 return this.snippet(editor.document);
@@ -78,7 +81,7 @@ export function activate(context: vscode.ExtensionContext) {
             let fspathg = fspath.split('/');
             fspathg.shift();
             fspathg.pop();
-            const fspathJoin = fspathg.join('/');
+            const fspathLoc = fspathg.join('/');
 
             let markDownDocument = document.getText();
             markDownDocument = markDownDocument.replace(new RegExp(`<markdown-html>`, `g`), ``)
@@ -87,15 +90,15 @@ export function activate(context: vscode.ExtensionContext) {
                 `<script type=\"text/javascript\" src=\"lib/window.app.js\"></script>`, ``), 
                 `<script type=\"text/javascript\" src=\"lib/window.app.js\"></script>
                 <script>
-                app._fileLocal = '${fspathJoin}/';//expose to file references in code
-                app._fileLocalUser = '${fspathJoin}/user/';
+                app._fileLocal = '${fspathLoc}/';//expose to file references in code
+                app._fileLocalUser = '${fspathLoc}/user/';
                 app._fileRef = '${pathJoin}/';//expose to file references in code
                 app._fileRefUser = '${pathJoin}/user/';//expose to file references in code
                 app._vscodeCommandLink = 'expose'//expose to have code aware of vscode
                 </script>`
             )
             .replace(new RegExp(`href=\"`, `g`), `href=\"${pathJoin}/`)
-            .replace(new RegExp(`src=\"`, `g`), `src=\"${fspathJoin}/`);
+            .replace(new RegExp(`src=\"`, `g`), `src=\"${fspathLoc}/`);
             return `<!DOCTYPE html>
                     <html>
                     ${markDownDocument}
@@ -104,7 +107,7 @@ export function activate(context: vscode.ExtensionContext) {
                     app._vscodeCommandSave = 'command:extension.saveCodeRule?';
                     app._vscodeDocOBJ = ${JSON.stringify(document.uri)};
                     app._vscodeDocOBJ.query = app._fileRef + 'app.js';
-                    app._vscodeDocURI = encodeURI(JSON.stringify(app._vscodeDocOBJ));
+                    app._vscodeDocURI = encodeURIComponent(JSON.stringify(app._vscodeDocOBJ));
                     app._vscodeRef = app._vscodeCommandOpen + '%5B' + app._vscodeDocURI + '%5D';
                     app._vscodeCommandLink = document.createElement('a');
                     app._vscodeCommandLink.id = 'vscode.command.link';
@@ -149,13 +152,52 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     vscode.commands.registerCommand('extension.saveCodeRule', (uri: vscode.Uri) => {
-        /// write to file
-        fs.writeFile(uri.query, decodeURIComponent(uri.fragment), function(err) {
-            if(err) {
-                return console.log(err);
-            }
-        }); 
+        let fspath = uri.query.toString();
+
+        let fspathq = fspath.split('?');
+        const fspathFile = fspathq[0];
+        fspathq.shift();
+        const fsquery = JSON.parse(fspathq.join('?'));
+        const logJSON = JSON.parse(fsquery.logJSON);
+
+        let fspathg = fspath.split('/');
+        fspathg.pop();
+        const fspathLoc = fspathg.join('/');
+
+        // file = (string) filepath of the file to read
+        fs.readFile(fspathLoc + `/${fsquery.file}`, 'utf8', function (err, data) {
             
+            /// write to file
+            fs.writeFile(fspathFile, decodeURIComponent(uri.fragment), function(err) {
+                if(err) {
+                    return console.log(err);
+                }
+            }); 
+            if (err) {
+
+                /// write to file
+                if(err.code == 'ENOENT') {
+                    fs.writeFile(fspathLoc + `/${fsquery.file}`, `var authority = ${JSON.stringify(logJSON)}`, function(err) {
+                        if(err) {
+                            return console.log(err);
+                        }
+                    });
+                }
+
+                return console.log(err);
+            } else {
+                let logDATA = JSON.parse(data.replace(new RegExp(`var authority = `, `g`), ``))
+                for (let obj in logJSON) {
+                    logDATA[obj] = {}
+                }
+                
+                fs.writeFile(fspathLoc + `/${fsquery.file}`, `var authority = ${JSON.stringify(logDATA)}`, function(err) {
+                    if(err) {
+                        return console.log(err);
+                    }
+                });
+            }
+        });    
     });
 
     context.subscriptions.push(disposable, registration);
