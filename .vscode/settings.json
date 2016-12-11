@@ -11,6 +11,5 @@
 		"out": true // set this to false to include "out" folder in search results
 	},
     // The default end of line character.
-    "files.eol": "\n",
-    "cSpell.enabled": true
+    "files.eol": "\n"
 }

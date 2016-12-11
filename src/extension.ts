@@ -8,15 +8,26 @@ import * as vscode from 'vscode';
 export function activate(context: vscode.ExtensionContext) {
 
     let fs = require('fs')
-
-    let previewUri = vscode.Uri.parse('timeline-code://authority/timeline-code');
     let successDoc
+    let prevdirectoryChange
+    let docChangeTimer
+    let preUri
+
+    function previewUri(bool) {
+        let update = Math.floor(Date.now() / 1000);
+        if (bool)
+            preUri = vscode.Uri.parse('timeline-code://Authority/timeline-code?' + update);
+        return preUri
+    }
 
     class TextDocumentContentProvider implements vscode.TextDocumentContentProvider {
         private _onDidChange = new vscode.EventEmitter<vscode.Uri>();
 
         public provideTextDocumentContent(uri: vscode.Uri): string {
-            return this.createMarkDownDoc();
+            
+            return this.createMarkDownDoc(function (string) {
+                return string
+            });
         }
 
         get onDidChange(): vscode.Event<vscode.Uri> {
@@ -27,17 +38,17 @@ export function activate(context: vscode.ExtensionContext) {
             this._onDidChange.fire(uri);
         }
 
-        private createMarkDownDoc() {
+        private createMarkDownDoc(callback) {
             let editor = vscode.window.activeTextEditor;
             if (!(editor.document.languageId === 'markdown')) {
                 successDoc = false
                 return this.errorSnippet("Active editor doesn't show a MarkDown document - no timeline to link.")
                 
             }
-            return this.extractSnippet();
+            return this.extractSnippet(callback);
         }
 
-        private extractSnippet(): string {
+        private extractSnippet(callback): string {
             let invalidDependancies = true
 
             let editor = vscode.window.activeTextEditor;
@@ -52,7 +63,7 @@ export function activate(context: vscode.ExtensionContext) {
                 successDoc = false
                 return this.errorSnippet("This document has no timeline.");
             } else {
-                return this.snippet(editor.document);
+                return this.snippet(editor.document, callback);
             }
         }
 
@@ -63,7 +74,7 @@ export function activate(context: vscode.ExtensionContext) {
                 </body>`;
         }
 
-        private snippet(document: vscode.TextDocument): string {
+        private snippet(document: vscode.TextDocument, callback): string {
             let path = document.uri.toString();
             let pathg = path.split('/');
             pathg.pop();
@@ -73,7 +84,6 @@ export function activate(context: vscode.ExtensionContext) {
                 let app = pathJoin + '/app.js';
                 let appUri = vscode.Uri.parse(app);
                 vscode.commands.executeCommand('vscode.open', appUri, vscode.ViewColumn.One);
-                vscode.commands.executeCommand('moveActiveEditor', 'first', 'tab');
                 successDoc = document.uri.fsPath;
             }
 
@@ -84,6 +94,43 @@ export function activate(context: vscode.ExtensionContext) {
             const fspathLoc = fspathg.join('/');
 
             let markDownDocument = document.getText();
+            let _appSetting = /(\/\/.*|\/.*|\/\*.*)?app.codesetting = '([^]*)'\n?\s/g.exec(markDownDocument);//if app.codesetting has been commented out
+            const appSettingReg = /^[A-Za-z]*[A-Za-z][A-Za-z0-9-. _]*$/g.exec(_appSetting[2])// valid characters only
+            let appSetting = ''
+            if (appSettingReg)
+                if (appSettingReg.length > 0 && (typeof _appSetting[1] == 'undefined' || _appSetting[1].length == 0))
+                    appSetting = appSettingReg[0] + '/';
+                else 
+                    appSettingReg[0] = ''
+            
+            const directory = `${fspathLoc}/user/${appSettingReg[0]}`
+            prevdirectoryChange = prevdirectoryChange || directory
+            fs.stat(directory, function(err, stats) {
+                //Check if error defined and the error code is "not exists"
+                if (err) {
+                    if (err.code == 'ENOENT') {
+                        //Create the directory, call the callback.
+                        fs.readdir(prevdirectoryChange, function(err, stats) {
+                            if (err || stats) {
+                                if (stats) {
+                                    if (stats.length > 0) {
+                                        fs.mkdirSync(directory);
+                                    } else {
+                                        fs.renameSync(prevdirectoryChange, directory)
+                                    }
+                                } else if (err) {
+                                    if (err.code == 'ENOTEMPTY' || err.code == 'ENOENT') {
+                                        fs.mkdirSync(directory);
+                                        // fs.mkdirSync(directory + '/assets'); add assets directory when adding images or sound
+                                    }
+                                }
+                            }
+                            prevdirectoryChange = directory
+                        })
+                    }
+                }
+            });
+
             markDownDocument = markDownDocument.replace(new RegExp(`<markdown-html>`, `g`), ``)
             .replace(new RegExp(`</markdown-html>`, `g`), ``)
             .replace(new RegExp(
@@ -91,15 +138,15 @@ export function activate(context: vscode.ExtensionContext) {
                 `<script type=\"text/javascript\" src=\"lib/window.app.js\"></script>
                 <script>
                 app._fileLocal = '${fspathLoc}/';//expose to file references in code
-                app._fileLocalUser = '${fspathLoc}/user/';
+                app._fileLocalUser = '${fspathLoc}/user/${appSetting}';
                 app._fileRef = '${pathJoin}/';//expose to file references in code
-                app._fileRefUser = '${pathJoin}/user/';//expose to file references in code
+                app._fileRefUser = '${pathJoin}/user/${appSetting}';//expose to file references in code
                 app._vscodeCommandLink = 'expose'//expose to have code aware of vscode
                 </script>`
             )
             .replace(new RegExp(`href=\"`, `g`), `href=\"${pathJoin}/`)
-            .replace(new RegExp(`src=\"`, `g`), `src=\"${fspathLoc}/`);
-            return `<!DOCTYPE html>
+            .replace(new RegExp(`src=\"`, `g`), `src=\"${fspathLoc}/`)
+            return callback(`<!DOCTYPE html>
                     <html>
                     ${markDownDocument}
                     <script>
@@ -116,7 +163,7 @@ export function activate(context: vscode.ExtensionContext) {
                     document.getElementsByTagName('body').item(0).appendChild(app._vscodeCommandLink);
                     </script>
                     //Render
-                    </html>`;
+                    </html>`);
         }
     }
 
@@ -126,18 +173,34 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.workspace.onDidChangeTextDocument((e: vscode.TextDocumentChangeEvent) => {
         let editDoc = e.document.uri.fsPath
         if (e.document.languageId === 'markdown' && editDoc === successDoc) {
-            provider.update(previewUri);
+            clearTimeout(docChangeTimer)
+            docChangeTimer = setTimeout(function () {
+                vscode.commands.executeCommand('_webview.closeDevTools')
+                provider.update(previewUri(false));
+                setTimeout(
+                function () {
+                    vscode.commands.executeCommand('_webview.openDevTools')
+                }, 2000);
+            }, 2000)
         }
     });
 
     vscode.window.onDidChangeTextEditorSelection((e: vscode.TextEditorSelectionChangeEvent) => {
         if (e.textEditor.document.languageId === 'markdown' && !successDoc) {
-            provider.update(previewUri);
+            clearTimeout(docChangeTimer)
+            docChangeTimer = setTimeout(function () {
+                vscode.commands.executeCommand('_webview.closeDevTools')
+                provider.update(previewUri(false));
+                setTimeout(
+                function () {
+                    console.log(vscode.commands.executeCommand('_webview.openDevTools'))
+                }, 2000);
+            }, 2000)
         }
     })
 
     let disposable = vscode.commands.registerCommand('extension.linkTimeLineCode', () => {
-        return vscode.commands.executeCommand('vscode.previewHtml', previewUri, vscode.ViewColumn.Two, 'Timeline Code Preview').then((success) => {
+        return vscode.commands.executeCommand('vscode.previewHtml', previewUri(true), vscode.ViewColumn.Two, 'Timeline Code Preview').then((success) => {
         }, (reason) => {
             vscode.window.showErrorMessage(reason);
         });
@@ -177,7 +240,7 @@ export function activate(context: vscode.ExtensionContext) {
 
                 /// write to file
                 if(err.code == 'ENOENT') {
-                    fs.writeFile(fspathLoc + `/${fsquery.file}`, `var authority = ${JSON.stringify(logJSON)}`, function(err) {
+                    fs.writeFile(fspathLoc + `/${fsquery.file}`, `var Authority = ${JSON.stringify(logJSON)}`, function(err) {
                         if(err) {
                             return console.log(err);
                         }
@@ -186,12 +249,12 @@ export function activate(context: vscode.ExtensionContext) {
 
                 return console.log(err);
             } else {
-                let logDATA = JSON.parse(data.replace(new RegExp(`var authority = `, `g`), ``))
+                let logDATA = JSON.parse(data.replace(new RegExp(`var Authority = `, `g`), ``))
                 for (let obj in logJSON) {
                     logDATA[obj] = {}
                 }
                 
-                fs.writeFile(fspathLoc + `/${fsquery.file}`, `var authority = ${JSON.stringify(logDATA)}`, function(err) {
+                fs.writeFile(fspathLoc + `/${fsquery.file}`, `var Authority = ${JSON.stringify(logDATA)}`, function(err) {
                     if(err) {
                         return console.log(err);
                     }

@@ -27,3 +27,17 @@ The purpose of the extension is to link Timeline Code enabling it to command VSC
 * open the [Timeline Code][tlc] working directory from the extention development host
 
 [tlc]: <https://github.com/leroyron/timeline-code>
+
+# Development
+
+Debugging:
+
+Debugger for Chrome
+
+    msjsdiag.debugger-for-chrome
+
+Disabling Chrome Cache
+
+Right-click and Inspect Element to open the DevTools. Now click Network in the toolbar. Finally, check the Disable cache checkbox at the top.
+
+![Disable Chrome Debugger](https://i.stack.imgur.com/Grwsc.png)
