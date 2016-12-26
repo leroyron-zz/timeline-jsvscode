@@ -1,5 +1,5 @@
 # TimeLine Code - Visual Studio Code Extension
-This will link [Timeline Code][tlc] preforming code launches and execution in vscode virtural web enviorment.
+This will link [Timeline Code][tlc] Engine Library(Private) preforming code launches and execution in vscode virtural web enviorment.
 
 The purpose of the extension is to link Timeline Code enabling it to command VSCode enviorment:
 - Open a MarkDown file with Timeline Code Library.
