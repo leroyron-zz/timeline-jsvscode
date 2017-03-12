@@ -199,7 +199,7 @@ export function activate(context: vscode.ExtensionContext) {
         }
     })
 
-    let disposable = vscode.commands.registerCommand('extension.linkTimeLineCode', () => {
+    let disposable = vscode.commands.registerCommand('extension.linkTimeLineJSCode', () => {
         return vscode.commands.executeCommand('vscode.previewHtml', previewUri(true), vscode.ViewColumn.Two, 'TimeLine JSCode Preview').then((success) => {
         }, (reason) => {
             vscode.window.showErrorMessage(reason);

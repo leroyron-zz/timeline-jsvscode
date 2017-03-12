@@ -1,7 +1,7 @@
 {
-    "name": "vscode-md-timeline-code",
+    "name": "vscode-md-timeline-jscode",
     "displayName": "TimeLine JSVSCode",
-    "description": "TimeLine JSCode linking in VSCode - A GUI for vscode for fast pace code previewing and editing (https://github.com/leroyron/timeline-code)",
+    "description": "TimeLine JSCode linking in VSCode - A GUI for vscode for fast pace code previewing and editing (https://github.com/leroyron/timeline-jscode)",
     "version": "0.0.10",
     "publisher": "Leroy Thompson",
 	"galleryBanner": {
@@ -9,14 +9,14 @@
 		"theme": "dark"
 	},
 	"bugs": {
-		"url": "https://github.com/ToloRon/timeline-vscode/issues",
+		"url": "https://github.com/ToloRon/timeline-jsvscode/issues",
 		"email": "leroy.ron@outlook.com"
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/ToloRon/timeline-vscode.git"
+		"url": "https://github.com/ToloRon/timeline-jsvscode.git"
 	},
-    "homepage": "https://github.com/ToloRon/timeline-vscode/wiki",
+    "homepage": "https://github.com/ToloRon/timeline-jsvscode/wiki",
 	"categories": [
 		"Other"
 	],
@@ -24,20 +24,20 @@
         "vscode": "^0.10.7"
     },
     "activationEvents": [
-        "onCommand:extension.linkTimeLineCode"
+        "onCommand:extension.linkTimeLineJSCode"
     ],
     "main": "./out/src/extension",
     "contributes": {
         "commands": [
             {
-                "command": "extension.linkTimeLineCode",
+                "command": "extension.linkTimeLineJSCode",
                 "title": "Link TimeLine JSCode"
             }
         ],
         "menus": {
             "editor/title": [
                 {
-                    "command": "extension.linkTimeLineCode",
+                    "command": "extension.linkTimeLineJSCode",
                     "when": "resourceLangId == md"
                 }
             ]
