@@ -1,7 +1,7 @@
 {
     "name": "vscode-md-timeline-code",
     "displayName": "Timeline VSCode",
-    "description": "Timeline Code linking in VSCode - A GUI for vscode for fast pace code previewing and editing (https://github.com/leroyron/timeline-code)",
+    "description": "TimeLine JSCode linking in VSCode - A GUI for vscode for fast pace code previewing and editing (https://github.com/leroyron/timeline-code)",
     "version": "0.0.10",
     "publisher": "Leroy Thompson",
 	"galleryBanner": {
@@ -31,7 +31,7 @@
         "commands": [
             {
                 "command": "extension.linkTimeLineCode",
-                "title": "Link Timeline Code"
+                "title": "Link TimeLine JSCode"
             }
         ],
         "menus": {
