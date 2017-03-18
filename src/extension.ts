@@ -80,12 +80,7 @@ export function activate(context: vscode.ExtensionContext) {
             pathg.pop();
             const pathJoin = pathg.join('/');
 
-            if (!successDoc) {
-                let app = pathJoin + '/app.js';
-                let appUri = vscode.Uri.parse(app);
-                vscode.commands.executeCommand('vscode.open', appUri, vscode.ViewColumn.One);
-                successDoc = document.uri.fsPath;
-            }
+            
 
             let fspath = document.uri.path.toString()
             let fspathg = fspath.split('/');
@@ -97,12 +92,20 @@ export function activate(context: vscode.ExtensionContext) {
             let _appSetting = /(\/\/.*|\/.*|\/\*.*)?app.codesetting = '([^]*)'\n?\s/g.exec(markDownDocument);//if app.codesetting has been commented out
             const appSettingReg = /^[A-Za-z]*[A-Za-z][A-Za-z0-9-. _]*$/g.exec(_appSetting[2])// valid characters only
             let appSetting = ''
+
             if (appSettingReg)
                 if (appSettingReg.length > 0 && (typeof _appSetting[1] == 'undefined' || _appSetting[1].length == 0))
                     appSetting = appSettingReg[0] + '/';
                 else 
                     appSettingReg[0] = ''
             
+            if (!successDoc) {
+                let app = pathJoin + '/user/' + appSetting + 'app.js';
+                let appUri = vscode.Uri.parse(app);
+                vscode.commands.executeCommand('vscode.open', appUri, vscode.ViewColumn.One);
+                successDoc = document.uri.fsPath;
+            }
+
             const directory = `${fspathLoc}/user/${appSettingReg[0]}`
             prevdirectoryChange = prevdirectoryChange || directory
             fs.stat(directory, function(err, stats) {
@@ -121,7 +124,7 @@ export function activate(context: vscode.ExtensionContext) {
                                 } else if (err) {
                                     if (err.code == 'ENOTEMPTY' || err.code == 'ENOENT') {
                                         fs.mkdirSync(directory);
-                                        // fs.mkdirSync(directory + '/assets'); add assets directory when adding images or sound
+                                        // fs.mkdirSync(directory + '/assets'); TODO - add assets directory when adding images or sound
                                     }
                                 }
                             }
@@ -144,6 +147,7 @@ export function activate(context: vscode.ExtensionContext) {
                 app._vscodeCommandLink = 'expose'//expose to have code aware of vscode
                 </script>`
             )
+            .replace(new RegExp(`\"app.js\"`, `g`), `\"user/${appSetting}app.js\"`)
             .replace(new RegExp(`href=\"`, `g`), `href=\"${pathJoin}/`)
             .replace(new RegExp(`src=\"`, `g`), `src=\"${fspathLoc}/`)
             return callback(`<!DOCTYPE html>
