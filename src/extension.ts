@@ -4,6 +4,7 @@
 'use strict';
 
 import * as vscode from 'vscode';
+import * as templateCODE from './templateCODE';
 
 export function activate(context: vscode.ExtensionContext) {
 
@@ -78,9 +79,9 @@ export function activate(context: vscode.ExtensionContext) {
             let path = document.uri.toString();
             let pathg = path.split('/');
             pathg.pop();
-            const pathJoin = pathg.join('/');
+            const pathJoin = pathg.join('/');         
 
-            
+
 
             let fspath = document.uri.path.toString()
             let fspathg = fspath.split('/');
@@ -99,10 +100,46 @@ export function activate(context: vscode.ExtensionContext) {
                 else 
                     appSettingReg[0] = ''
             
-            if (!successDoc) {
-                let app = pathJoin + '/user/' + appSetting + 'app.js';
-                let appUri = vscode.Uri.parse(app);
+            let userFileExists = function (url, callback) {
+                fs.stat(url, function (err, stats) {
+                    //Check if error defined and the error code is "not exists"
+                    if (err) {
+                        if (err.code == 'ENOENT') {
+                            if (callback)
+                                callback(false)
+                        }
+                    } else {
+                        if (callback)
+                            callback(true)
+                    }
+                });
+            }
+
+            let writeUserFile = function (url, content, callback) {
+                fs.writeFile(url, content, function(err) {
+                    if(err) {
+                        return console.log(err);
+                    } else {
+                        if (callback)
+                            callback(url)
+                    }
+                });
+            }
+
+            let openUserFile = function (url) {
+                console.log(url)
+                let appUri = vscode.Uri.parse(url);
                 vscode.commands.executeCommand('vscode.open', appUri, vscode.ViewColumn.One);
+            }
+
+            let app = pathJoin + '/user/' + appSetting + 'app.js';
+            const localApp = `${fspathLoc}/user/${appSetting}app.js`
+            const localComment = `${fspathLoc}/user/${appSetting}comment`
+            const localSegment = `${fspathLoc}/user/${appSetting}segment`
+            const localAction = `${fspathLoc}/user/${appSetting}action`
+            const localSound = `${fspathLoc}/user/${appSetting}sound`
+            let appTemplate = pathJoin + '/lib/pipeline/app.template.js';
+            if (!successDoc) {
                 successDoc = document.uri.fsPath;
             }
 
@@ -117,14 +154,38 @@ export function activate(context: vscode.ExtensionContext) {
                             if (err || stats) {
                                 if (stats) {
                                     if (stats.length > 0) {
-                                        fs.mkdirSync(directory);
-                                    } else {
                                         fs.renameSync(prevdirectoryChange, directory)
+                                    } else {
+                                        fs.mkdirSync(directory);
+                                        userFileExists(localApp, function (found) {
+                                            if (!found) {
+                                                // Make defaults when there's no app.js
+                                                writeUserFile(localApp, templateCODE.basic.app, function (url) {
+                                                    openUserFile(app)
+                                                    fs.mkdirSync(directory + '/assets')
+                                                    writeUserFile(localComment, templateCODE.basic.comment, undefined);
+                                                    writeUserFile(localSegment, templateCODE.basic.segment, undefined);
+                                                    writeUserFile(localAction, templateCODE.basic.action, undefined);
+                                                    writeUserFile(localSound, templateCODE.basic.sound, undefined);
+                                                });
+                                            } else {
+                                                openUserFile(app)
+                                            }
+
+                                        })
                                     }
                                 } else if (err) {
                                     if (err.code == 'ENOTEMPTY' || err.code == 'ENOENT') {
                                         fs.mkdirSync(directory);
-                                        // fs.mkdirSync(directory + '/assets'); TODO - add assets directory when adding images or sound
+                                        writeUserFile(localApp, templateCODE.basic.app, function (url) {
+                                            openUserFile(app)
+                                            fs.mkdirSync(directory + '/assets')
+                                            writeUserFile(localComment, templateCODE.basic.comment, undefined);
+                                            writeUserFile(localSegment, templateCODE.basic.segment, undefined);
+                                            writeUserFile(localAction, templateCODE.basic.action, undefined);
+                                            writeUserFile(localSound, templateCODE.basic.sound, undefined);
+                                        });
+                                        
                                     }
                                 }
                             }
