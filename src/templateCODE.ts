@@ -10,6 +10,7 @@ export const basic = {
         this.width = app.resolution.width
         this.height = app.resolution.height
     }
+    this.resolution(app)
 
     // Private
     var variable = value;

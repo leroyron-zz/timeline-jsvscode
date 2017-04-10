@@ -208,7 +208,8 @@ export function activate(context: vscode.ExtensionContext) {
                 app._vscodeCommandLink = 'expose'//expose to have code aware of vscode
                 </script>`
             )
-            .replace(new RegExp(`\"app.js\"`, `g`), `\"user/${appSetting}app.js\"`)
+            //.replace(new RegExp(`\"app.js\"`, `g`), `\"user/${appSetting}app.js\"`)
+            .replace(new RegExp(`script.src = \"`, `g`), `script.src = \"${fspathLoc}/`)
             .replace(new RegExp(`href=\"`, `g`), `href=\"${pathJoin}/`)
             .replace(new RegExp(`src=\"`, `g`), `src=\"${fspathLoc}/`)
             return callback(`<!DOCTYPE html>
