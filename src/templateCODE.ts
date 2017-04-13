@@ -39,7 +39,7 @@ export const basic = {
 
     this.SetupContextBindsForStreamAndBuildAfterLoad = function () {
         app.codeLoc = 'user/' + app.codesetting
-        app.fileLocAssets = app._fileLocal + app.codeLoc + '/assets/'
+        app.fileLocAssets = app.vscode._fileLocal + app.codeLoc + '/assets/'
         createGFXBindNodesToStream('timeline')
         buildStream()
     }

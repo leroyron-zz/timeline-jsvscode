@@ -198,14 +198,27 @@ export function activate(context: vscode.ExtensionContext) {
             markDownDocument = markDownDocument.replace(new RegExp(`<markdown-html>`, `g`), ``)
             .replace(new RegExp(`</markdown-html>`, `g`), ``)
             .replace(new RegExp(
-                `<script type=\"text/javascript\" src=\"lib/window.app.js\"></script>`, ``), 
-                `<script type=\"text/javascript\" src=\"lib/window.app.js\"></script>
+                `<!-- VSCode command palette goes here // don't remove -->`, ``), 
+                `<!-- VSCode command palette goes here // don't remove -->
                 <script>
-                app._fileLocal = '${fspathLoc}/';//expose to file references in code
-                app._fileLocalUser = '${fspathLoc}/user/${appSetting}';
-                app._fileRef = '${pathJoin}/';//expose to file references in code
-                app._fileRefUser = '${pathJoin}/user/${appSetting}';//expose to file references in code
-                app._vscodeCommandLink = 'expose'//expose to have code aware of vscode
+                var authority = {};
+                authority._fileLocal = '${fspathLoc}/';//expose to file references in code
+                authority._fileLocalUser = '${fspathLoc}/user/${appSetting}';
+                authority._fileRef = '${pathJoin}/';//expose to file references in code
+                authority._fileRefUser = '${pathJoin}/user/${appSetting}';//expose to file references in code
+                authority._CommandLink = 'expose'//expose to have code aware of vscode
+                authority._CommandOpen = 'command:extension.openCodeRule?';
+                authority._CommandSave = 'command:extension.saveCodeRule?';
+                authority._DocOBJ = ${JSON.stringify(document.uri)};
+                authority._DocOBJ.query = authority._fileRef + 'app.js';
+                authority._DocURI = encodeURIComponent(JSON.stringify(authority._DocOBJ));
+                authority._Ref = authority._CommandOpen + '%5B' + authority._DocURI + '%5D';
+                authority._CommandLink = document.createElement('a');
+                authority._CommandLink.id = 'vscode.command.link';
+                authority._CommandLink.style.display = 'none';
+                authority._CommandLink.href = authority._Ref;
+                authority.codesetting = '${appSettingReg[0]}'
+                document.getElementsByTagName('body').item(0).appendChild(authority._CommandLink);
                 </script>`
             )
             //.replace(new RegExp(`\"app.js\"`, `g`), `\"user/${appSetting}app.js\"`)
@@ -215,20 +228,6 @@ export function activate(context: vscode.ExtensionContext) {
             return callback(`<!DOCTYPE html>
                     <html>
                     ${markDownDocument}
-                    <script>
-                    app._vscodeCommandOpen = 'command:extension.openCodeRule?';
-                    app._vscodeCommandSave = 'command:extension.saveCodeRule?';
-                    app._vscodeDocOBJ = ${JSON.stringify(document.uri)};
-                    app._vscodeDocOBJ.query = app._fileRef + 'app.js';
-                    app._vscodeDocURI = encodeURIComponent(JSON.stringify(app._vscodeDocOBJ));
-                    app._vscodeRef = app._vscodeCommandOpen + '%5B' + app._vscodeDocURI + '%5D';
-                    app._vscodeCommandLink = document.createElement('a');
-                    app._vscodeCommandLink.id = 'vscode.command.link';
-                    app._vscodeCommandLink.style.display = 'none';
-                    app._vscodeCommandLink.href = app._vscodeRef;
-                    document.getElementsByTagName('body').item(0).appendChild(app._vscodeCommandLink);
-                    </script>
-                    //Render
                     </html>`);
         }
     }
