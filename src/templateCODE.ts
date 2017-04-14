@@ -13,7 +13,7 @@ export const basic = {
     this.resolution(app)
 
     // Private
-    var variable = value;
+    var variable;
 
     function init () {
         
@@ -52,7 +52,7 @@ export const basic = {
         var bind = ctx[stream].addon.binding
         var buffer = ctx.timeline.addon.buffer
 
-
+        var element = {position: {x:0,y:0}}
         //// Simple Bind and Buffering
         bind(stream, [
         [element.position, 800]
@@ -76,7 +76,7 @@ export const basic = {
         false)
 
         //// Complex Bind and Buffering
-        var obj = {position:{type:position}, position:{type:rotation}}
+        var obj = {position:{type:'position'}, rotation:{type:'rotation'}}
         element.nodes = bind(stream, [
         [obj.position, 800], [obj.rotation, 801]
         ],
@@ -92,12 +92,12 @@ export const basic = {
         // element.nodes[0 or 1].position.y
         // element.nodes[0 or 1].rotation.x
         // element.nodes[0 or 1].rotation.
-        var last = camera.position.y + 140 - 280
+        var last = element.nodes[0].y + 140 - 280
         buffer.eval('timeline',
             [
                                                                     // even out formula ( stream.length / (displacements * eases ) )
                 [                                                   //                                 2200 / (3 * 2) = 166
-                    [element.nodes[0].position], [[['y', 140], ['y', -280], ['y', element.nodes[0].position.y - last]]], [['easeInSine', 2200 / (3 * 2)], ['easeOutSine', 2200 / (3 * 2)]]//, *offset
+                    [element.nodes[0]], [[['y', 140], ['y', -280], ['y', element.nodes[0].y - last]]], [['easeInSine', 2200 / (3 * 2)], ['easeOutSine', 2200 / (3 * 2)]]//, *offset
                 ]
             ],
         false)// false for non-relative values for timeframe reading
@@ -108,7 +108,7 @@ export const basic = {
         console.log('Finished Binding to stream - Building')
         ctx.timeline.build(function () {
             console.log('Finished Building - Initializing')
-            ctx.timeline.addon.timeframe._init() // timeframe init has to be set to true for additional scripts to load
+            ctx.timeline.addon.timeframe._init(window) // timeframe init has to be set to true for additional scripts to load
         })
     }
 }(this.app, this.canvas, this.ctx)`,
