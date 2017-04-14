@@ -10,6 +10,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     let fs = require('fs')
     let successDoc
+    let prevSelect
     let prevdirectoryChange
     let docChangeTimer
     let preUri
@@ -79,9 +80,7 @@ export function activate(context: vscode.ExtensionContext) {
             let path = document.uri.toString();
             let pathg = path.split('/');
             pathg.pop();
-            const pathJoin = pathg.join('/');         
-
-
+            const pathJoin = pathg.join('/');
 
             let fspath = document.uri.path.toString()
             let fspathg = fspath.split('/');
@@ -89,17 +88,34 @@ export function activate(context: vscode.ExtensionContext) {
             fspathg.pop();
             const fspathLoc = fspathg.join('/');
 
-            let markDownDocument = document.getText();
-            let _appSetting = /(\/\/.*|\/.*|\/\*.*)?app.codesetting = '([^]*)'\n?\s/g.exec(markDownDocument);//if app.codesetting has been commented out
-            const appSettingReg = /^[A-Za-z]*[A-Za-z][A-Za-z0-9-. _]*$/g.exec(_appSetting[2])// valid characters only
+            let saveMarkDownDocument, markDownDocument;
+            saveMarkDownDocument = markDownDocument = document.getText();
+            let _select = /var select = {([^]*)(}\/\/ !end \/\/ don't remove\/modify!)\n?\s/g.exec(markDownDocument);
+            let selectString = _select[1].replace(new RegExp(`\n`, `g`), ``)
+                .replace(new RegExp(` `, `g`), ``)
+                .replace(new RegExp(`mode`, `g`), `"mode"`)
+                .replace(new RegExp(`duration`, `g`), `"duration"`)
+                .replace(new RegExp(`preload`, `g`), `"preload"`)
+            selectString = "{" + selectString + "}"
+            let selectJSON = JSON.parse(selectString)
+            // even if app.codesetting has been commented out
+            //let _appSetting = /(\/\/.*|\/.*|\/\*.*)?app.codesetting = '([^]*)'\n?\s/g.exec(markDownDocument);
+            // even if app.codesetting has been commented out
+            let _appSetting = /app.codesetting = \'([^]*)\'\n?\s/g.exec(markDownDocument);
+            const appSettingReg = /^[A-Za-z]*[A-Za-z][A-Za-z0-9-. _]*$/g.exec(_appSetting[1])// valid characters only
+            console.log(_appSetting)
+            console.log(appSettingReg)
             let appSetting = ''
 
+            console.log(appSettingReg.length, _appSetting[1].length)
             if (appSettingReg)
                 if (appSettingReg.length > 0 && (typeof _appSetting[1] == 'undefined' || _appSetting[1].length == 0))
-                    appSetting = appSettingReg[0] + '/';
-                else 
                     appSettingReg[0] = ''
-            
+                else
+                    appSetting = appSettingReg[0] + '/';
+
+            console.log(_appSetting)
+            console.log(appSettingReg)
             let userFileExists = function (url, callback) {
                 fs.stat(url, function (err, stats) {
                     //Check if error defined and the error code is "not exists"
@@ -116,8 +132,8 @@ export function activate(context: vscode.ExtensionContext) {
             }
 
             let writeUserFile = function (url, content, callback) {
-                fs.writeFile(url, content, function(err) {
-                    if(err) {
+                fs.writeFile(url, content, function (err) {
+                    if (err) {
                         return console.log(err);
                     } else {
                         if (callback)
@@ -144,91 +160,131 @@ export function activate(context: vscode.ExtensionContext) {
             }
 
             const directory = `${fspathLoc}/user/${appSettingReg[0]}`
+            const select = `${appSettingReg[0]}`
+            prevSelect = prevSelect || select
             prevdirectoryChange = prevdirectoryChange || directory
-            fs.stat(directory, function(err, stats) {
-                //Check if error defined and the error code is "not exists"
-                if (err) {
-                    if (err.code == 'ENOENT') {
-                        //Create the directory, call the callback.
-                        fs.readdir(prevdirectoryChange, function(err, stats) {
-                            if (err || stats) {
-                                if (stats) {
-                                    if (stats.length > 0) {
-                                        fs.renameSync(prevdirectoryChange, directory)
-                                    } else {
-                                        fs.mkdirSync(directory);
-                                        userFileExists(localApp, function (found) {
-                                            if (!found) {
-                                                // Make defaults when there's no app.js
-                                                writeUserFile(localApp, templateCODE.basic.app, function (url) {
-                                                    openUserFile(app)
-                                                    fs.mkdirSync(directory + '/assets')
-                                                    writeUserFile(localComment, templateCODE.basic.comment, undefined);
-                                                    writeUserFile(localSegment, templateCODE.basic.segment, undefined);
-                                                    writeUserFile(localAction, templateCODE.basic.action, undefined);
-                                                    writeUserFile(localSound, templateCODE.basic.sound, undefined);
-                                                });
-                                            } else {
-                                                openUserFile(app)
-                                            }
 
-                                        })
-                                    }
-                                } else if (err) {
-                                    if (err.code == 'ENOTEMPTY' || err.code == 'ENOENT') {
-                                        fs.mkdirSync(directory);
-                                        writeUserFile(localApp, templateCODE.basic.app, function (url) {
-                                            openUserFile(app)
-                                            fs.mkdirSync(directory + '/assets')
-                                            writeUserFile(localComment, templateCODE.basic.comment, undefined);
-                                            writeUserFile(localSegment, templateCODE.basic.segment, undefined);
-                                            writeUserFile(localAction, templateCODE.basic.action, undefined);
-                                            writeUserFile(localSound, templateCODE.basic.sound, undefined);
-                                        });
-                                        
+            var writeOutFilesUpdateJSON = function () {
+                if (!selectJSON[prevSelect]) {
+                    if (prevSelect != select) {
+                        selectJSON[select] = selectJSON[prevSelect]
+                    }
+                } else {
+                    if(!selectJSON[select])
+                        selectJSON[select] = { mode: "2d", duration: 2000, preload: [] }
+                }
+                prevSelect = select
+                fs.stat(directory, function (err, stats) {
+                    //Check if error defined and the error code is "not exists"
+                    if (err) {
+                        if (err.code == 'ENOENT') {
+                            //Create the directory, call the callback.
+                            fs.readdir(prevdirectoryChange, function (err, stats) {
+                                if (err || stats) {
+                                    if (stats) {
+                                        if (stats.length > 0) {
+                                            fs.renameSync(prevdirectoryChange, directory)
+                                        } else {
+                                            fs.mkdirSync(directory);
+                                            userFileExists(localApp, function (found) {
+                                                if (!found) {
+                                                    // Make defaults when there's no app.js
+                                                    writeUserFile(localApp, templateCODE.basic.app, function (url) {
+                                                        openUserFile(app)
+                                                        fs.mkdirSync(directory + '/assets')
+                                                        writeUserFile(localComment, templateCODE.basic.comment, undefined);
+                                                        writeUserFile(localSegment, templateCODE.basic.segment, undefined);
+                                                        writeUserFile(localAction, templateCODE.basic.action, undefined);
+                                                        writeUserFile(localSound, templateCODE.basic.sound, undefined);
+                                                    });
+                                                } else {
+                                                    openUserFile(app)
+                                                }
+                                            })
+                                        }
+                                    } else if (err) {
+                                        if (err.code == 'ENOTEMPTY' || err.code == 'ENOENT') {
+                                            fs.mkdirSync(directory);
+                                            writeUserFile(localApp, templateCODE.basic.app, function (url) {
+                                                openUserFile(app)
+                                                fs.mkdirSync(directory + '/assets')
+                                                writeUserFile(localComment, templateCODE.basic.comment, undefined);
+                                                writeUserFile(localSegment, templateCODE.basic.segment, undefined);
+                                                writeUserFile(localAction, templateCODE.basic.action, undefined);
+                                                writeUserFile(localSound, templateCODE.basic.sound, undefined);
+                                            });
+                                        }
                                     }
                                 }
-                            }
-                            prevdirectoryChange = directory
-                        })
+                                prevdirectoryChange = directory
+                            })
+                        }
                     }
-                }
-            });
+                });
+            }
 
-            markDownDocument = markDownDocument.replace(new RegExp(`<markdown-html>`, `g`), ``)
-            .replace(new RegExp(`</markdown-html>`, `g`), ``)
-            .replace(new RegExp(
-                `<!-- VSCode command palette goes here // don't remove -->`, ``), 
-                `<!-- VSCode command palette goes here // don't remove -->
-                <script>
-                var authority = {};
-                authority._fileLocal = '${fspathLoc}/';//expose to file references in code
-                authority._fileLocalUser = '${fspathLoc}/user/${appSetting}';
-                authority._fileRef = '${pathJoin}/';//expose to file references in code
-                authority._fileRefUser = '${pathJoin}/user/${appSetting}';//expose to file references in code
-                authority._CommandLink = 'expose'//expose to have code aware of vscode
-                authority._CommandOpen = 'command:extension.openCodeRule?';
-                authority._CommandSave = 'command:extension.saveCodeRule?';
-                authority._DocOBJ = ${JSON.stringify(document.uri)};
-                authority._DocOBJ.query = authority._fileRef + 'app.js';
-                authority._DocURI = encodeURIComponent(JSON.stringify(authority._DocOBJ));
-                authority._Ref = authority._CommandOpen + '%5B' + authority._DocURI + '%5D';
-                authority._CommandLink = document.createElement('a');
-                authority._CommandLink.id = 'vscode.command.link';
-                authority._CommandLink.style.display = 'none';
-                authority._CommandLink.href = authority._Ref;
-                authority.codesetting = '${appSettingReg[0]}'
-                document.getElementsByTagName('body').item(0).appendChild(authority._CommandLink);
-                </script>`
-            )
-            //.replace(new RegExp(`\"app.js\"`, `g`), `\"user/${appSetting}app.js\"`)
-            .replace(new RegExp(`script.src = \"`, `g`), `script.src = \"${fspathLoc}/`)
-            .replace(new RegExp(`href=\"`, `g`), `href=\"${pathJoin}/`)
-            .replace(new RegExp(`src=\"`, `g`), `src=\"${fspathLoc}/`)
+            var docrewrite = function (writeOutFilesUpdateJSON) {
+                writeOutFilesUpdateJSON()
+                let rephraseMarkDown = JSON.stringify(selectJSON)
+                    .replace(new RegExp(`"mode":`, `g`), `mode: `)
+                    .replace(new RegExp(`"duration":`, `g`), ` duration: `)
+                    .replace(new RegExp(`"preload":`, `g`), `\n                        preload: `)
+                    .replace(new RegExp(`{"`, `g`), `{\n                    "`)
+                    .replace(new RegExp(`]},`, `g`), `]\n                    },\n                    `)
+                    .replace(new RegExp(`]}`, `g`), `]\n                    }`)
+                    .replace(new RegExp(`}}`, `g`), `}\n                    }`)
+                    .replace(new RegExp(`:{`, `g`), `: {`)
+                    //.replace(new RegExp(_appSetting[0], `g`), `app.codesetting = '${appSettingReg[0]}'\n`)
+                //rephraseMarkDown = '\n                    '+rephraseMarkDown
+
+                saveMarkDownDocument = saveMarkDownDocument.replace(_select[0], 'var select = ' + rephraseMarkDown + '\/\/ !end \/\/ don\'t remove\/modify!\n')
+
+                fs.writeFile(fspathLoc + '/timeline.vscode.md', decodeURIComponent(saveMarkDownDocument), function (err) {
+                    if (err) {
+                        return console.log(err);
+                    }
+                });
+
+                markDownDocument = saveMarkDownDocument.replace(new RegExp(`<markdown-html>`, `g`), ``)
+                    .replace(new RegExp(`</markdown-html>`, `g`), ``)
+                    .replace(new RegExp(
+                        `<!-- !VSCode command association goes here // don't remove\/modify! -->`, ``),
+                    `<!-- !VSCode command association goes here // don't remove\/modify! -->
+                    <script>
+                    var authority = {};
+                    authority._fileLocal = '${fspathLoc}/';//expose to file references in code
+                    authority._fileLocalUser = '${fspathLoc}/user/${appSetting}';
+                    authority._fileRef = '${pathJoin}/';//expose to file references in code
+                    authority._fileRefUser = '${pathJoin}/user/${appSetting}';//expose to file references in code
+                    authority._CommandLink = 'expose'//expose to have code aware of vscode
+                    authority._CommandOpen = 'command:extension.openCodeRule?';
+                    authority._CommandSave = 'command:extension.saveCodeRule?';
+                    authority._DocOBJ = ${JSON.stringify(document.uri)};
+                    authority._DocOBJ.query = authority._fileRef + 'app.js';
+                    authority._DocURI = encodeURIComponent(JSON.stringify(authority._DocOBJ));
+                    authority._Ref = authority._CommandOpen + '%5B' + authority._DocURI + '%5D';
+                    authority._CommandLink = document.createElement('a');
+                    authority._CommandLink.id = 'vscode.command.link';
+                    authority._CommandLink.style.display = 'none';
+                    authority._CommandLink.href = authority._Ref;
+                    authority.codesetting = '${appSettingReg[0]}'
+                    authority.select = ${JSON.stringify(selectJSON)}
+                    document.getElementsByTagName('body').item(0).appendChild(authority._CommandLink);
+                    </script>`
+                    )
+                    //.replace(new RegExp(`${_select[1]}`, `g`), `src=\"${'var select = '+JSON.stringify(selectJSON)}/`)
+                    //.replace(new RegExp(`\"app.js\"`, `g`), `\"user/${appSetting}app.js\"`)
+                    .replace(new RegExp(`script.src = \"`, `g`), `script.src = \"${fspathLoc}/`)
+                    .replace(new RegExp(`href=\"`, `g`), `href=\"${pathJoin}/`)
+                    .replace(new RegExp(`src=\"`, `g`), `src=\"${fspathLoc}/`)
+
+                    return markDownDocument
+            }
+
+            markDownDocument = docrewrite(writeOutFilesUpdateJSON)
+
             return callback(`<!DOCTYPE html>
-                    <html>
-                    ${markDownDocument}
-                    </html>`);
+                                <html>${markDownDocument}</html>`);
         }
     }
 
