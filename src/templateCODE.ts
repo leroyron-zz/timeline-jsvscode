@@ -20,21 +20,21 @@ export const basic = {
     }
 
     ctx.timeline.addon.timeframe.invoke = function () {
-        ctx.calc()// before render
-        ctx.rendering()
+        ctx.calc(this.lapse, this.access)// before render
+        ctx.rendering(this._deltaTimeFrame)
         ctx.compute()// after render
     }
 
-    ctx.calc = function () {
-        
+    ctx.calc = function (lapse, access) {
+
     }
 
-    ctx.rendering = function () {
-        
+    ctx.rendering = function (timeFrame) {
+
     }
 
     ctx.compute = function () {
-        
+
     }
 
     this.SetupContextBindsForStreamAndBuildAfterLoad = function () {
