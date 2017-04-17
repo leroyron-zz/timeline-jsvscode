@@ -165,14 +165,9 @@ export function activate(context: vscode.ExtensionContext) {
             prevdirectoryChange = prevdirectoryChange || directory
 
             var writeOutFilesUpdateJSON = function () {
-                if (!selectJSON[prevSelect]) {
-                    if (prevSelect != select) {
-                        selectJSON[select] = selectJSON[prevSelect]
-                    }
-                } else {
-                    if(!selectJSON[select])
-                        selectJSON[select] = { mode: "2d", duration: 2000, preload: [] }
-                }
+                if(!selectJSON[select])
+                    selectJSON[select] = { mode: "2d", duration: 2000, preload: [] }
+                
                 prevSelect = select
                 fs.stat(directory, function (err, stats) {
                     //Check if error defined and the error code is "not exists"
@@ -184,6 +179,7 @@ export function activate(context: vscode.ExtensionContext) {
                                     if (stats) {
                                         if (stats.length > 0) {
                                             fs.renameSync(prevdirectoryChange, directory)
+                                            delete selectJSON[prevSelect]
                                         } else {
                                             fs.mkdirSync(directory);
                                             userFileExists(localApp, function (found) {
