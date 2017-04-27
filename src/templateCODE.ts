@@ -13,10 +13,10 @@ export const basic = {
     this.resolution(app)
 
     // Private
-    var variable;
+    var variable
 
     function init () {
-        
+
     }
 
     ctx.timeline.addon.timeframe.invoke = function () {
@@ -51,8 +51,8 @@ export const basic = {
         var bind = ctx[stream].addon.binding
         var buffer = ctx.timeline.addon.buffer
 
-        var element = {position: {x:0,y:0}}
-        //// Simple Bind and Buffering
+        var element = {position: {x: 0, y: 0}, variable: variable}
+        // // Simple Bind and Buffering
         bind(stream, [
         [element.position, 800]
         ],
@@ -62,20 +62,20 @@ export const basic = {
             ],
         [801, 802],
         false)
-        //// Bind existing element
+        // // Bind existing element
         // Access --
         // element.position.x
         // element.position.y
         buffer.eval('timeline',
-        [
             [
+                [
                 [element.position], [[['x', 1000]]], [['linear', 2200]]
-            ]
-        ],
+                ]
+            ],
         false)
 
-        //// Complex Bind and Buffering
-        var obj = {position:{type:'position'}, rotation:{type:'rotation'}}
+        // // Complex Bind and Buffering
+        var obj = {position: {type: 'position'}, rotation: {type: 'rotation'}}
         element.nodes = bind(stream, [
         [obj.position, 800], [obj.rotation, 801]
         ],
@@ -85,8 +85,8 @@ export const basic = {
             ],
         [801, 802],
         false)
-        //// Binds multiple child nodes to element
-        // Access -- 
+        // // Binds multiple child nodes to element
+        // Access --
         // element.nodes[0 or 1].position.x
         // element.nodes[0 or 1].position.y
         // element.nodes[0 or 1].rotation.x
@@ -102,7 +102,7 @@ export const basic = {
         false)// false for non-relative values for timeframe reading
         
     }
-    function buildStream(stream) {
+    function buildStream (stream) {
         // build stream and prebuff from the binding DATA
         console.log('Finished Binding to stream - Building')
         ctx.timeline.build(function () {
