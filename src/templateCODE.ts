@@ -1,7 +1,6 @@
 export const basic = {
     ////////////////////////////////////////////////////////////////////////
     app:`this.canvas.app = new function (app, canvas, ctx) {
-
     // Public
     this.width = app.resolution.width
     this.height = app.resolution.height
@@ -53,8 +52,8 @@ export const basic = {
         buildStream()
     }
 
-    function createGFXBindNodesToStream(stream) {
-        console.log('Binding objects to stream - Starting');
+    function createGFXBindNodesToStream (stream) {
+        console.log('Binding objects to stream - Starting')
 
         var bind = ctx[stream].addon.binding
         var buffer = ctx.timeline.addon.buffer
@@ -108,7 +107,6 @@ export const basic = {
                 ]
             ],
         false)// false for non-relative values for timeframe reading
-        
     }
     function buildStream (stream) {
         // build stream and prebuff from the binding DATA
@@ -118,7 +116,8 @@ export const basic = {
             ctx.timeline.addon.timeframe._init(window) // timeframe init has to be set to true for additional scripts to load
         })
     }
-}(this.app, this.canvas, this.ctx)`,
+}(this.app, this.canvas, this.ctx)
+`,
     ////////////////////////////////////////////////////////////////////////
     comment:`window.Authority = {}`,
     segment:`window.Authority = {}`,
