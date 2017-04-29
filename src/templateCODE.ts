@@ -19,9 +19,17 @@ export const basic = {
 
     }
 
+    ctx.timeline.addon.timeframe.process = function () {
+        ctx.process(this.access, this._timeFrame)// before timeFrame process
+    }
+
+    ctx.process = function (access, timeFrame) {
+
+    }
+
     ctx.timeline.addon.timeframe.invoke = function () {
         ctx.calc(this.lapse, this.access)// before render
-        ctx.rendering(this._deltaTimeFrame)
+        ctx.rendering(this._timeFrame)
         ctx.compute()// after render
     }
 
@@ -112,8 +120,8 @@ export const basic = {
     }
 }(this.app, this.canvas, this.ctx)`,
     ////////////////////////////////////////////////////////////////////////
-    comment:`var Authority = {}`,
-    segment:`var Authority = {}`,
-    action:`var Authority = {}`,
-    sound:`var Authority = {}`
+    comment:`window.Authority = {}`,
+    segment:`window.Authority = {}`,
+    action:`window.Authority = {}`,
+    sound:`window.Authority = {}`
 };
