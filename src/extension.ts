@@ -103,19 +103,15 @@ export function activate(context: vscode.ExtensionContext) {
             // even if app.codesetting has been commented out
             let _appSetting = /app.codesetting = \'([^]*)\'\n?\s/g.exec(markDownDocument);
             const appSettingReg = /^[A-Za-z]*[A-Za-z][A-Za-z0-9-. _]*$/g.exec(_appSetting[1])// valid characters only
-            console.log(_appSetting)
-            console.log(appSettingReg)
             let appSetting = ''
 
-            console.log(appSettingReg.length, _appSetting[1].length)
             if (appSettingReg)
                 if (appSettingReg.length > 0 && (typeof _appSetting[1] == 'undefined' || _appSetting[1].length == 0))
                     appSettingReg[0] = ''
                 else
                     appSetting = appSettingReg[0] + '/';
 
-            console.log(_appSetting)
-            console.log(appSettingReg)
+
             let userFileExists = function (url, callback) {
                 fs.stat(url, function (err, stats) {
                     //Check if error defined and the error code is "not exists"
@@ -143,7 +139,6 @@ export function activate(context: vscode.ExtensionContext) {
             }
 
             let openUserFile = function (url) {
-                console.log(url)
                 let appUri = vscode.Uri.parse(url);
                 vscode.commands.executeCommand('vscode.open', appUri, vscode.ViewColumn.One);
             }
@@ -248,24 +243,24 @@ export function activate(context: vscode.ExtensionContext) {
                     `<!-- !VSCode command association goes here // don't remove\/modify! -->
                     <script>
                     window.Authority = {};
-                    authority._fileLocal = '${fspathLoc}/';//expose to file references in code
-                    authority._fileLocalUser = '${fspathLoc}/user/${appSetting}';
-                    authority._fileRef = '${pathJoin}/';//expose to file references in code
-                    authority._fileRefUser = '${pathJoin}/user/${appSetting}';//expose to file references in code
-                    authority._CommandLink = 'expose'//expose to have code aware of vscode
-                    authority._CommandOpen = 'command:extension.openCodeRule?';
-                    authority._CommandSave = 'command:extension.saveCodeRule?';
-                    authority._DocOBJ = ${JSON.stringify(document.uri)};
-                    authority._DocOBJ.query = authority._fileRef + 'app.js';
-                    authority._DocURI = encodeURIComponent(JSON.stringify(authority._DocOBJ));
-                    authority._Ref = authority._CommandOpen + '%5B' + authority._DocURI + '%5D';
-                    authority._CommandLink = document.createElement('a');
-                    authority._CommandLink.id = 'vscode.command.link';
-                    authority._CommandLink.style.display = 'none';
-                    authority._CommandLink.href = authority._Ref;
-                    authority.codesetting = '${appSettingReg[0]}'
-                    authority.select = ${JSON.stringify(selectJSON)}
-                    document.getElementsByTagName('body').item(0).appendChild(authority._CommandLink);
+                    window.Authority._fileLocal = '${fspathLoc}/';//expose to file references in code
+                    window.Authority._fileLocalUser = '${fspathLoc}/user/${appSetting}';
+                    window.Authority._fileRef = '${pathJoin}/';//expose to file references in code
+                    window.Authority._fileRefUser = '${pathJoin}/user/${appSetting}';//expose to file references in code
+                    window.Authority._CommandLink = 'expose'//expose to have code aware of vscode
+                    window.Authority._CommandOpen = 'command:extension.openCodeRule?';
+                    window.Authority._CommandSave = 'command:extension.saveCodeRule?';
+                    window.Authority._DocOBJ = ${JSON.stringify(document.uri)};
+                    window.Authority._DocOBJ.query = window.Authority._fileRef + 'app.js';
+                    window.Authority._DocURI = encodeURIComponent(JSON.stringify(window.Authority._DocOBJ));
+                    window.Authority._Ref = window.Authority._CommandOpen + '%5B' + window.Authority._DocURI + '%5D';
+                    window.Authority._CommandLink = document.createElement('a');
+                    window.Authority._CommandLink.id = 'vscode.command.link';
+                    window.Authority._CommandLink.style.display = 'none';
+                    window.Authority._CommandLink.href = window.Authority._Ref;
+                    window.Authority.codesetting = '${appSettingReg[0]}'
+                    window.Authority.select = ${JSON.stringify(selectJSON)}
+                    document.getElementsByTagName('body').item(0).appendChild(window.Authority._CommandLink);
                     </script>`
                     )
                     //.replace(new RegExp(`${_select[1]}`, `g`), `src=\"${'var select = '+JSON.stringify(selectJSON)}/`)
