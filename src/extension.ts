@@ -247,7 +247,7 @@ export function activate(context: vscode.ExtensionContext) {
                         `<!-- !VSCode command association goes here // don't remove\/modify! -->`, ``),
                     `<!-- !VSCode command association goes here // don't remove\/modify! -->
                     <script>
-                    var authority = {};
+                    window.Authority = {};
                     authority._fileLocal = '${fspathLoc}/';//expose to file references in code
                     authority._fileLocalUser = '${fspathLoc}/user/${appSetting}';
                     authority._fileRef = '${pathJoin}/';//expose to file references in code
@@ -357,7 +357,7 @@ export function activate(context: vscode.ExtensionContext) {
 
                 /// write to file
                 if(err.code == 'ENOENT') {
-                    fs.writeFile(fspathLoc + `/${fsquery.file}`, `var Authority = ${JSON.stringify(logJSON)}`, function(err) {
+                    fs.writeFile(fspathLoc + `/${fsquery.file}`, `window.Authority = ${JSON.stringify(logJSON)}`, function(err) {
                         if(err) {
                             return console.log(err);
                         }
@@ -366,12 +366,12 @@ export function activate(context: vscode.ExtensionContext) {
 
                 return console.log(err);
             } else {
-                let logDATA = JSON.parse(data.replace(new RegExp(`var Authority = `, `g`), ``))
+                let logDATA = JSON.parse(data.replace(new RegExp(`window.Authority = `, `g`), ``))
                 for (let obj in logJSON) {
                     logDATA[obj] = {}
                 }
                 
-                fs.writeFile(fspathLoc + `/${fsquery.file}`, `var Authority = ${JSON.stringify(logDATA)}`, function(err) {
+                fs.writeFile(fspathLoc + `/${fsquery.file}`, `window.Authority = ${JSON.stringify(logDATA)}`, function(err) {
                     if(err) {
                         return console.log(err);
                     }
