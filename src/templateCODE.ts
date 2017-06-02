@@ -15,7 +15,7 @@ export const basic = {
     var variable
 
     function init () {
-
+        document.getElementsByTagName('link')[0].href = app.codeLoc + '/style.css?v=1.0'
     }
 
     ctx.timeline.addon.timeframe.process = function () {
@@ -119,6 +119,17 @@ export const basic = {
 }(this.app, this.canvas, this.ctx)
 `,
     ////////////////////////////////////////////////////////////////////////
+    style:`body, html, iframe {width:100%; height:100%; margin: 0px; padding: 0px; overflow: hidden; -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover; border: 0; background: #000}
+#info, #coords {color:#fff; position: absolute; bottom: 0px; left: 0px; z-index: 1;}
+#coords {color: #000};
+input {right: left;}
+canvas, svg {position: absolute; top: 0px; left: 0px;}
+text {font-size: 12px; fill: #bbb}
+path, line {stroke: #aaa; fill: #FFF;}
+.dg.ac {z-index: 1!important}`,
     comment:`window.Authority = {}`,
     segment:`window.Authority = {}`,
     action:`window.Authority = {}`,
