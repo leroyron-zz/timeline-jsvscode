@@ -60,7 +60,7 @@ export const basic = {
 
         var element = {position: {x: 0, y: 0}, variable: variable}
         // // Simple Bind and Buffering
-        bind(stream, [
+        bind.init(stream, [
         [element.position, 800]
         ],
             [
@@ -83,7 +83,7 @@ export const basic = {
 
         // // Complex Bind and Buffering
         var obj = {position: {type: 'position'}, rotation: {type: 'rotation'}}
-        element.nodes = bind(stream, [
+        element.nodes = bind.init(stream, [
         [obj.position, 800], [obj.rotation, 801]
         ],
             [
