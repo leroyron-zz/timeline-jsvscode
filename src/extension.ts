@@ -4,7 +4,7 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import * as templateCODE from './templateCODE';
+import * as templateCODE from './templateV2CODE';
 
 export function activate(context: vscode.ExtensionContext) {
 
@@ -146,6 +146,7 @@ export function activate(context: vscode.ExtensionContext) {
             let app = pathJoin + '/user/' + appSetting + 'app.js';
             const localApp = `${fspathLoc}/user/${appSetting}app.js`
             const localStyle = `${fspathLoc}/user/${appSetting}style.css`
+            const localCommentTemplate = `${fspathLoc}/user/${appSetting}commenttemplate.js`
             const localComment = `${fspathLoc}/user/${appSetting}comment`
             const localSegment = `${fspathLoc}/user/${appSetting}segment`
             const localAction = `${fspathLoc}/user/${appSetting}action`
@@ -185,6 +186,7 @@ export function activate(context: vscode.ExtensionContext) {
                                                         openUserFile(app)
                                                         fs.mkdirSync(directory + '/assets')
                                                         writeUserFile(localStyle, templateCODE.basic.style, undefined);
+                                                        writeUserFile(localCommentTemplate, templateCODE.basic.commentTemplate, undefined);
                                                         writeUserFile(localComment, templateCODE.basic.comment, undefined);
                                                         writeUserFile(localSegment, templateCODE.basic.segment, undefined);
                                                         writeUserFile(localAction, templateCODE.basic.action, undefined);
@@ -202,6 +204,7 @@ export function activate(context: vscode.ExtensionContext) {
                                                 openUserFile(app)
                                                 fs.mkdirSync(directory + '/assets')
                                                 writeUserFile(localStyle, templateCODE.basic.style, undefined);
+                                                writeUserFile(localCommentTemplate, templateCODE.basic.commentTemplate, undefined);
                                                 writeUserFile(localComment, templateCODE.basic.comment, undefined);
                                                 writeUserFile(localSegment, templateCODE.basic.segment, undefined);
                                                 writeUserFile(localAction, templateCODE.basic.action, undefined);
@@ -308,7 +311,7 @@ export function activate(context: vscode.ExtensionContext) {
                 provider.update(previewUri(false));
                 setTimeout(
                 function () {
-                    console.log(vscode.commands.executeCommand('_webview.openDevTools'))
+                    vscode.commands.executeCommand('_webview.openDevTools')
                 }, 2000);
             }, 2000)
         }
